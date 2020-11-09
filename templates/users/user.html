@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>{{ user.username }}</title>
+{% endblock %}
+
+{% block body %}
+    <h1>User details for {{ user.username }}</h1>
+
+    <div class="details">
+        <span class="frame-margin flex-center"><b class="frame">Mean score: {% if score %} {{ "%.2f"|format(score) }} / 10.00 {% else %} N/A {% endif %}</b></span>
+        <div id="user-details">
+            <div class="details" id="mail-member">
+                <span class="frame-margin"><b class="frame">Email:</b> {{ user.email }}</span>
+                <span class="frame-margin"><b class="frame">Member since:</b> {{ user.registration_date.strftime('%d / %m / %Y') }}</span>
+            </div>
+
+            {% if g.user and g.user.meta.id == user.meta.id %}
+            <div class="details">
+                <form action="{{ url_for('user.update_user', id=user.meta.id, action='email') }}" method="post">
+                    <label>Current email:<input class="text-field" type="email" maxlength="50" name="email_current"autocomplete="off" required></label>
+                    <label>New email:<input class="text-field" type="email" maxlength="50" name="email_new" autocomplete="off" required></label>
+                    <label>Confirm email:<input class="text-field" type="email" maxlength="50" name="email_confirm" autocomplete="off" required></label>
+
+                    <input class="link-button flex-center" type="submit" value="UPDATE EMAIL" onclick="return confirm('Are you sure you want to change email?');">
+                </form>
+                <hr>
+                <form action="{{ url_for('user.update_user', id=user.meta.id, action='password') }}" method="post">
+                    <label>Current password:<input class="text-field" type="password" maxlength="24" name="password_current" required></label>
+                    <label>New password:<input class="text-field" type="password" maxlength="24" name="password_new" required></label>
+                    <label>Confirm password:<input class="text-field" type="password" maxlength="24" name="password_confirm" required></label>
+
+                    <input class="link-button flex-center" type="submit" value="UPDATE PASSWORD" onclick="return confirm('Are you sure you wnt to change password?');">
+                </form>
+                <hr>
+                <form action="{{ url_for('user.delete_user', id=user.meta.id) }}" method="post">
+                    <input class="link-button flex-center submit-button" type="submit" value="DELETE YOUR ACCOUNT" onclick="return confirm('Are you sure you want to delete your account?');">
+                </form>
+                <form action="{{ url_for('user.watch_words', id=user.meta.id) }}" method="post" style="align-items: center;">
+                    <div><input class="text-field" type="text" name="word" placeholder="Input words you want to follow separated by space" required>
+                    <input class="link-button flex-center" type="submit" value="Submit"></div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if games %}
+        <b class="frame-margin frame">GAMES FOLLOWED TOTAL ({{ games|length }}):</b>
+
+        <div class="displaying">
+            <form method="get">
+                <label for="page_size_game">Page size:</label>
+                <select class="text-field" id="page_size_game" name="page_size_game" onchange="this.form.submit()">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="40">40</option>
+                </select>
+                <input type="hidden" name="page_game" value="1">
+                {% if reviews %}
+                <input type="hidden" name="page_size_review" value="{{ page_size_review }}">
+                <input type="hidden" name="page_review" value="{{ page_review }}">
+                {% endif %}
+            </form>
+
+            <form method="get" id="page-number">
+                <label>Page number:</label>
+
+                {% if total_pages_games <= 1 %}
+                <div class="rd-button">
+                    <label>
+                        <input id="page_game1" type="radio" name="page_game" value="1"><span>1</span>
+                    </label>
+                </div>
+                {% else %}
+                    {% for i in range(total_pages_games) %}
+                    <div class="rd-button">
+                        <label>
+                            <input id="page_game{{ i+1 }}" type="radio" name="page_game" onclick="this.form.submit()" value="{{ i+1 }}"><span>{{ i+1 }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <input type="hidden" name="page_size_game" value="{{ page_size_game }}">
+                {% if reviews %}
+                <input type="hidden" name="page_size_review" value="{{ page_size_review }}">
+                <input type="hidden" name="page_review" value="{{ page_review }}">
+                {% endif %}
+            </form>
+        </div>
+
+        {% for game in games %}
+        <a class="game" href="{{ url_for('game.view_game', title=game.title) }}">
+            <img class="frame-margin" src="{{ url_for('static', filename='/games/' + game.meta.id + '_s.jpg') }}" width="32" height="32">{{ game.title }}</a>
+        {% endfor %}
+
+        <script> document.getElementById("page_size_game").value = {{ page_size_game }}; </script>
+        <script> document.getElementById("page_game{{ page_game }}").checked = true; </script>
+
+        {% else %}
+        <b class="frame-margin frame">You don't have any followed games.</b>
+        {% endif %}
+
+        {% if reviews %}
+        <b class="frame-margin frame">USER REVIEWS TOTAL ({{ reviews|length }}):</b>
+
+        <div class="displaying">
+            <form method="get">
+                <label for="page_size_review">Page size:</label>
+                <select class="text-field" id="page_size_review" name="page_size_review" onchange="this.form.submit()">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="40">40</option>
+                </select>
+                <input type="hidden" name="page_review" value="1">
+                {% if games %}
+                <input type="hidden" name="page_size_game" value="{{ page_size_game }}">
+                <input type="hidden" name="page_game" value="{{ page_game }}">
+                {% endif %}
+            </form>
+
+            <form method="get" id="page-number">
+                <label>Page number:</label>
+
+                {% if total_pages_reviews <= 1 %}
+                <div class="rd-button">
+                    <label>
+                        <input id="page_review1" type="radio" name="page_review" value="1"><span>1</span>
+                    </label>
+                </div>
+                {% else %}
+                    {% for i in range(total_pages_reviews) %}
+                    <div class="rd-button">
+                        <label>
+                            <input id="page_review{{ i+1 }}" type="radio" name="page_review" onclick="this.form.submit()" value="{{ i+1 }}"><span>{{ i+1 }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <input type="hidden" name="page_size_review" value="{{ page_size_review }}">
+                {% if games %}
+                <input type="hidden" name="page_size_game" value="{{ page_size_game }}">
+                <input type="hidden" name="page_game" value="{{ page_game }}">
+                {% endif %}
+            </form>
+        </div>
+
+        {% for review in reviews %}
+            <div class="review">
+                <a href="{{ url_for('review.view_review', id=review.meta.id) }}">{{ review.title }}</a>
+                posted on {{ review.date_posted.strftime('%d / %m / %Y') }}
+                <br>"{{ review.description[:50] }}..." <b class="frame" id="grade">{{ "%.2f"|format(review.total()) }} / 10.00</b>
+                for <a href="{{ url_for('game.view_game', title=review.game_id) }}">{{ review.game_id }}</a>
+            </div>
+        {% endfor %}
+
+        <script> document.getElementById("page_size_review").value = {{ page_size_review }}; </script>
+        <script> document.getElementById("page_review{{ page_review }}").checked = true; </script>
+
+        {% else %}
+        <b class="frame-margin frame">You haven't posted any reviews yet.</b>
+        {% endif %}
+
+    </div>
+{% endblock %}

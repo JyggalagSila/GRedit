@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Game details for {{ game.title|upper }}</title>
+{% endblock %}
+
+{% block body %}
+    <h1>{{ game.title }}</h1>
+
+    <div class="details">
+        <span class="frame-margin flex-center"><b class="frame">Average score for the game: {% if score %} {{ "%.2f"|format(score) }} / 10.00{% else %} N/A {% endif %}</b></span>
+
+        <img class="frame-margin flex-center" src="{{ url_for('static', filename='/games/' + game.meta.id + '.jpg') }}" width="460" height="215">
+
+        {% if g.user %}
+            {% if game.title not in g.user.game_ids %}
+            <form class="flex-center" action="{{ url_for('game.add_game_to_library', id=game.meta.id) }}" method="post">
+                <input class="link-button frame-margin" type="submit" value="FOLLOW THIS GAME">
+            </form>
+            {% else %}
+            <form class="flex-center" action="{{ url_for('game.delete_game_from_library', id=game.meta.id) }}" method="post">
+                <input class="link-button frame-margin" type="submit" value="UNFOLLOW THIS GAME">
+            </form>
+            {% endif %}
+        {% endif %}
+
+        <span class="frame-margin"><b class="frame">Release date:</b> {{ game.release_date.strftime('%d / %m / %Y') }}</span>
+        <span class="frame-margin"><b class="frame">Developer:</b> {{ game.developer }}</span>
+        <span class="frame-margin"><b class="frame">Publisher:</b> {{ game.publisher }}</span>
+        <span class="frame-margin"><b class="frame">Description:</b> {{ game.description }}</span>
+        <span class="frame-margin" id="tags-games"><b class="frame">Tags:</b>
+            {% for tag in game.tags %}
+            <a class="link-button" href="{{ url_for('index', tags=[tag]) }}">{{ tag }}</a>
+                {% if not loop.last %} {% endif %}
+            {% endfor %}
+        </span>
+
+        <hr>
+
+        {% if g.user %}
+            {% if g.user.username in users %}
+            <b class="flex-center" id="review-button">You have already written review for this game.</b>
+            {% else %}
+            <a class="flex-center link-button" id="review-button" href="{{ url_for('review.create_review', title=game.title) }}">Write a review for the game</a>
+            {% endif %}
+        {% endif %}
+
+        {% if reviews %}
+        <b class="frame-margin frame">REVIEWS ({{ reviews|length }})</b>
+        <div class="displaying">
+            <form method="get">
+                <label for="page_size">Page size:</label>
+                <select class="text-field" id="page_size" name="page_size" onchange="this.form.submit()">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="40">40</option>
+                </select>
+                <input type="hidden" name="page" value="1">
+            </form>
+
+            <form method="get" id="page-number">
+                <label>Page number:</label>
+
+                {% if total_pages <= 1 %}
+                <div class="rd-button">
+                    <label>
+                        <input id="page1" type="radio" name="page" value="1"><span>1</span>
+                    </label>
+                </div>
+                {% else %}
+                    {% for i in range(total_pages) %}
+                    <div class="rd-button">
+                        <label>
+                            <input id="page{{ i+1 }}" type="radio" name="page" onclick="this.form.submit()" value="{{ i+1 }}"><span>{{ i+1 }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if request.args.get('page_size') %}
+                <input type="hidden" name="page_size" value="{{ request.args.get('page_size') }}">
+                {% endif %}
+            </form>
+        </div>
+
+        {% for review in reviews %}
+        <div class="review">
+            {% if review.user_id == g.user.username %}<b id="own">OWN</b>{% endif %}
+            <a href="{{ url_for('review.view_review', id=review.meta.id) }}">{{ review.title }}</a>
+            posted on {{ review.date_posted.strftime('%d / %m / %Y') }} by <a href="{{ url_for('user.view_user', username=review.user_id) }}">{{ review.user_id }}</a>
+            <br>"{{ review.description[:50] }}..." <b class="frame" id="grade">{{ "%.2f"|format(review.total()) }} / 10.00</b>
+        </div>
+        {% endfor %}
+
+        <script> document.getElementById("page_size").value = {{ page_size }}; </script>
+        <script> document.getElementById("page{{ page }}").checked = true; </script>
+
+        {% endif %}
+    </div>
+{% endblock %}

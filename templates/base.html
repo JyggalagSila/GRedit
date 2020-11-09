@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link href='https://fonts.googleapis.com/css?family=Nanum Pen Script' rel='stylesheet'>
+    {% block head %} {% endblock %}
+</head>
+<body>
+	<nav>
+		<a href="{{ url_for('index') }}"><div class="link-button">MAIN PAGE</div></a>
+
+		<form id="search" action="{{ url_for('index') }}" method="get">
+			<label for="essearch">Search GRedit:</label>
+			<input class="text-field" type="search" id="essearch" name="essearch" placeholder="Search for game, publisher, developer, description..." required>
+			<input type="hidden" name="page" value="1">
+			{% block search %} {% endblock %}
+			<input class="link-button" type="submit" id="essearchb" value="Search">
+			<a href="{{ url_for('base.advanced_search') }}"><div class="link-button">Advanced Search</div></a>
+		</form>
+		<div>
+			{% if not g.user %}
+			<a href="{{ url_for('auth.login') }}"><div class="link-button">LOGIN</div></a>
+			<a href="{{ url_for('auth.register') }}"><div class="link-button">REGISTER</div></a>
+			{% else %}
+			<a href="{{ url_for('user.view_user', username=g.user.username) }}"><div class="link-button">MY ACCOUNT</div></a>
+			<a href="{{ url_for('auth.logout') }}"><div class="link-button">LOGOUT</div></a>
+			{% endif %}
+		</div>
+
+		{% if essearch %}
+		<script> document.getElementById("essearch").value= "{{ essearch }}"; </script>
+		{% endif %}
+
+		{% block nav %} {% endblock %}
+	</nav>
+
+    {% for msg in get_flashed_messages() %}
+	<div class="alert">
+		<span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+		<strong>{{ msg }}</strong>
+	</div>
+    {% endfor %}
+
+    {% block body %} {% endblock %}
+</body>
+</html>

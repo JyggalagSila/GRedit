@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Update the review</title>
+{% endblock %}
+
+{% block body %}
+    <h1>UPDATE THE REVIEW</h1>
+
+    <div class="login" id="create-review">
+        <form method="post">
+            <label class="flex-row review-title-desc" ><b>Title</b><input class="text-field" type="text" maxlength="35" name="title" autocomplete="off" value="{{ review.title }}" required></label>
+            <hr>
+            <label class="flex-row review-row"><b>Visuals</b> (textures, animation, models, GUI...)<input class="text-field" type="number" min="1" max="10" maxlength="2" name="visuals" value="{{ review.visuals }}" required><b>/10</b></label>
+            <label class="flex-row review-row"><b>Gameplay</b> (mechanics, combat, puzzles, diversity...)<input class="text-field" type="number" min="1" max="10" maxlength="2" name="gameplay" value="{{ review.gameplay }}" required><b>/10</b></label>
+            <label class="flex-row review-row"><b>Difficulty</b> (difficulty options, how hard it is...) <input class="text-field" type="number" min="1" max="10" maxlength="2" name="difficulty" value="{{ review.difficulty }}" required><b>/10</b></label>
+            <label class="flex-row review-row"><b>Narrative</b> (story, atmosphere, character development...)<input class="text-field" type="number" min="1" max="10" maxlength="2" name="narrative" value="{{ review.narrative }}" required><b>/10</b></label>
+            <label class="flex-row review-row"><b>Audio</b> (ambient / combat music, voice acting, SFX...)<input class="text-field" type="number" min="1" max="10" maxlength="2" name="audio" value="{{ review.audio }}" required><b>/10</b></label>
+            <label class="flex-row review-row"><b>Replayability</b> (choices, unlockables, achievements, combos...)<input class="text-field" type="number" min="1" max="10" maxlength="2" name="replayability" value="{{ review.replayability }}" required><b>/10</b></label>
+            <label class="flex-row review-row"><b>Enjoyment</b> (based on the personal taste)<input class="text-field" type="number" min="1" max="10" maxlength="2" name="enjoyment" value="{{ review.enjoyment }}" required><b>/10</b></label>
+            <hr>
+            <label class="flex-row review-title-desc"><b>Review</b><textarea class="text-field" id="description" name="description">{{ review.description }}</textarea></label>
+
+            <input class="link-button flex-center submit-button" type="submit" value="Save changes">
+        </form>
+    </div>
+{% endblock %}

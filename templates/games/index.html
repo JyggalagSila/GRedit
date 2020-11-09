@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>GRedit</title>
+{% endblock %}
+
+{% block search %}
+    {% if request.args.get('page_size') %}
+    <input type="hidden" name="page_size" value="{{ request.args.get('page_size') }}">
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<h1>Welcome to GRedit</h1>
+    <div class="flexing-games">
+        <div class="flexing-head">
+            <div class="flexing-title">
+            {% if essearch or tags %}
+                {% if response.hits.total.value == 0 %}
+                Couldn't find any games.
+                {% else %}
+                Found {{ response.hits.total.value }} games:
+                {% endif %}
+            {% else %}
+            Browsing all {{ response.hits.total.value }} games.
+            {% endif %}
+            </div>
+            <div class="displaying">
+            Displaying:
+            {% if response.hits.total.value == 0 %} 0 {% else %} {{ page_size * (page - 1) + 1 }} {% endif %}
+            -
+            {% if page_size * page > response.hits.total.value %} {{ response.hits.total.value }} {% else %} {{ page_size * page }} {% endif %}
+
+                <form method="get">
+                    <label for="sort">Sorting:</label>
+                    <select class="text-field" id="sort" name="sort" onchange="this.form.submit()">
+                        <option value="def">By relevancy</option>
+                        <option value="title_asc">Ascending by title</option>
+                        <option value="title_desc">Descending by title</option>
+                        <option value="publisher_asc">Ascending by publisher</option>
+                        <option value="publisher_desc">Descending by publisher</option>
+                        <option value="developer_asc">Ascending by developer</option>
+                        <option value="developer_desc">Descending by developer</option>
+                        <option value="date_asc">Ascending by date</option>
+                        <option value="date_desc">Descending by date</option>
+                    </select>
+                    <input type="hidden" name="page" value="1">
+
+                    {% if request.args.get('essearch') and request.args.get('essearch') != '' %}
+                    <input type="hidden" name="essearch" value="{{ request.args.get('essearch') }}">
+                    {% endif %}
+
+                    {% if request.args.get('page_size') %}
+                    <input type="hidden" name="page_size" value="{{ request.args.get('page_size') }}">
+                    {% endif %}
+
+                    {% if request.args.getlist('tags') %}
+                        {% for tag in request.args.getlist('tags') %}
+                        <input type="hidden" name="tags" value="{{ tag }}">
+                        {% endfor %}
+                    {% endif %}
+                </form>
+
+                <form method="get">
+                    <label for="page_size">Page size:</label>
+                    <select class="text-field" id="page_size" name="page_size" onchange="this.form.submit()">
+                        <option value="12">12</option>
+                        <option value="20">20</option>
+                        <option value="40">40</option>
+                    </select>
+                    <input type="hidden" name="page" value="1">
+
+                    {% if request.args.get('essearch') and request.args.get('essearch') != '' %}
+                    <input type="hidden" name="essearch" value="{{ request.args.get('essearch') }}">
+                    {% endif %}
+
+                    {% if request.args.get('sort') %}
+                    <input type="hidden" name="sort" value="{{ request.args.get('sort') }}">
+                    {% endif %}
+
+                    {% if request.args.getlist('tags') %}
+                        {% for tag in request.args.getlist('tags') %}
+                        <input type="hidden" name="tags" value="{{ tag }}">
+                        {% endfor %}
+                    {% endif %}
+                </form>
+
+                <form method="get" id="page-number">
+                    <label>Page number:</label>
+
+                    {% if total_pages <= 1 %}
+                    <div class="rd-button">
+                        <label>
+                            <input id="page1" type="radio" name="page" value="1"><span>1</span>
+                        </label>
+                    </div>
+                    {% else %}
+                        {% for i in range(total_pages) %}
+                        <div class="rd-button">
+                            <label>
+                                <input id="page{{ i+1 }}" type="radio" name="page" onclick="this.form.submit()" value="{{ i+1 }}"><span>{{ i+1 }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if request.args.get('sort') %}
+                    <input type="hidden" name="sort" value="{{ request.args.get('sort') }}">
+                    {% endif %}
+
+                    {% if request.args.get('page_size') %}
+                    <input type="hidden" name="page_size" value="{{ request.args.get('page_size') }}">
+                    {% endif %}
+
+                    {% if request.args.get('essearch') %}
+                    <input type="hidden" name="essearch" value="{{ request.args.get('essearch') }}">
+                    {% endif %}
+
+                    {% if request.args.getlist('tags') %}
+                        {% for tag in request.args.getlist('tags') %}
+                        <input type="hidden" name="tags" value="{{ tag }}">
+                        {% endfor %}
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <hr>
+        <div class="flexing">
+        {% for hit in response %}
+            <div class="card">
+                <a href="{{ url_for('game.view_game', title=hit.title) }}">
+                    <img src="{{ url_for('static', filename='/games/' + hit.meta.id + '.jpg') }}" width="460" height="215">
+                    <header class="container"><b>{{ hit.title|upper }}</b></header>
+                </a>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+
+    <div class="tags">
+        <div class="flexing-title">Tags:</div>
+        <hr>
+        <form method="get">
+            {% for tag in response.aggregations.types.buckets %}
+            <div class="ck-button">
+                <label>
+                    <input type="checkbox" id="tag{{ tag.key }}" name="tags" value="{{ tag.key }}" onclick="this.form.submit()"><span>{{ tag.key }}</span>
+                </label>
+            </div>
+            {% endfor %}
+            <input type="hidden" name="page" value="1">
+
+            {% if request.args.get('page_size') %}
+            <input type="hidden" name="page_size" value="{{ request.args.get('page_size') }}">
+            {% endif %}
+
+            {% if request.args.get('sort') %}
+            <input type="hidden" name="sort" value="{{ request.args.get('sort') }}">
+            {% endif %}
+
+            {% if request.args.get('essearch') %}
+            <input type="hidden" name="essearch" value="{{ request.args.get('essearch') }}">
+            {% endif %}
+        </form>
+    </div>
+
+    <script> document.getElementById("page_size").value = {{ page_size }}; </script>
+    <script> document.getElementById("page{{ page }}").checked = true; </script>
+    {% if tags %}
+        {% for tag in tags %}
+        <script> document.getElementById("tag{{ tag }}").checked = true; </script>
+        {% endfor %}
+    {% endif %}
+    <script> document.getElementById("sort").value = "{{ sort }}"; </script>
+
+{% endblock %}

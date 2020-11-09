@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>{{ review.title }}</title>
+{% endblock %}
+
+{% block body %}
+    <h1>Review details for - {{ review.title }}</h1>
+
+    <div class="details">
+        <span class="frame-margin flex-center"><b class="frame">Average - {{ "%.2f"|format(review.total()) }}  / 10.00</b></span>
+        <div class="details grades">
+            <div class="inside-grades">
+                <span class="frame-margin"><b class="frame">Visuals:</b> {{ review.visuals }} / 10</span>
+                <span class="frame-margin"><b class="frame">Gameplay:</b> {{ review.gameplay }} / 10</span>
+                <span class="frame-margin"><b class="frame">Difficulty:</b> {{ review.difficulty }} / 10</span>
+                <span class="frame-margin"><b class="frame">Narrative:</b> {{ review.narrative }} / 10</span>
+                <span class="frame-margin"><b class="frame">Audio:</b> {{ review.audio }} / 10</span>
+                <span class="frame-margin"><b class="frame">Replayability:</b> {{ review.replayability }} / 10</span>
+                <span class="frame-margin"><b class="frame">Enjoyment:</b> {{ review.enjoyment }} / 10</span>
+            </div>
+            <div>
+                <span class="frame-margin"><b class="frame">Posted on:</b> {{ review.date_posted.strftime('%d / %m / %Y %H:%M:%S') }}</span>
+                <span class="frame-margin"><b class="frame">Created by:</b> <a href="{{ url_for('user.view_user', username=review.user_id) }}">{{ review.user_id }}</a></span>
+                <span class="frame-margin"><b class="frame">For the game:</b> <a href="{{ url_for('game.view_game', title=review.game_id) }}">{{ review.game_id }}</a></span>
+                {% if review.last_modified %}
+                <span class="frame-margin"><b class="frame">Last modified on:</b> {{ review.last_modified.strftime('%d / %m / %Y %H:%M:%S') }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <hr>
+        <span class="frame-margin"><b class="frame">Review:</b> {{ review.description }}</span>
+        <hr>
+        <div class="flex-center" id="update-delete">
+            {% if g.user and g.user.username == review.user_id %}
+            <a class="link-button submit-button" href="{{ url_for('review.update_review', id=review.meta.id) }}">Update review</a>
+            <form action="{{ url_for('review.delete_review', id=review.meta.id) }}" method="post">
+                <input class="link-button submit-button" type="submit" value="Delete review" onclick="return confirm('Are you sure you want to delete review?');">
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

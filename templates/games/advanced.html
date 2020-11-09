@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link href='https://fonts.googleapis.com/css?family=Nanum Pen Script' rel='stylesheet'>
+</head>
+<body>
+	<nav>
+		<a href="{{ url_for('index') }}"><div class="link-button">MAIN PAGE</div></a>
+		<div>
+			{% if not g.user %}
+			<a href="{{ url_for('auth.login') }}"><div class="link-button">LOGIN</div></a>
+			<a href="{{ url_for('auth.register') }}"><div class="link-button">REGISTER</div></a>
+			{% else %}
+			<a href="{{ url_for('user.view_user', username=g.user.username) }}"><div class="link-button">MY ACCOUNT</div></a>
+			<a href="{{ url_for('auth.logout') }}"><div class="link-button">LOGOUT</div></a>
+			{% endif %}
+		</div>
+	</nav>
+
+    {% for msg in get_flashed_messages() %}
+	<div class="alert">
+		<span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+		<strong>{{ msg }}</strong>
+	</div>
+    {% endfor %}
+
+	<div><h1>ADVANCED SEARCH OPTIONS</h1>
+		<form method="post" class="flexing-title flex-center">
+			<div class="flexing">
+				<input type="text" class="text-field" style="flex-grow: 5;" name="query" placeholder="Input search term...">
+				<div class="ck-button" style="flex-grow">
+					<label><input id="rd_title" type="radio" name="option" value="title"><span>Title only</span></label>
+				</div>
+				<div class="ck-button">
+					<label><input id="rd_description" type="radio" name="option" value="description"><span>Description only</span></label>
+				</div>
+				<div class="ck-button">
+					<label><input id="rd_both" type="radio" name="option" value="both" checked><span>Both</span></label>
+				</div>
+			</div>
+			<hr>
+			<div><label>Include tags:</label>
+			{% for tag in response.aggregations.types.buckets %}
+			<div class="ck-button" id="tagi{{ tag.key }}">
+				<label>
+					<input type="checkbox"  name="include_tags" value="{{ tag.key }}"><span>{{ tag.key }}</span>
+				</label>
+			</div>
+			{% endfor %}
+			</div>
+			<div><label>Exclude tags:</label>
+			{% for tag in response.aggregations.types.buckets %}
+			<div class="ck-button" id="tage{{ tag.key }}">
+				<label>
+					<input type="checkbox"  name="exclude_tags" value="{{ tag.key }}"><span>{{ tag.key }}</span>
+				</label>
+			</div>
+			{% endfor %}
+			</div>
+			<hr>
+			<label>Publisher: <input type="text" class="text-field" style="flex-grow: 1;" name="publisher" placeholder="Input publisher..."></label>
+			<label>Developer: <input type="text" class="text-field" style="flex-grow: 1;" name="developer" placeholder="Input developer..."></label>
+			<hr>
+			<label>Date start: <input type="date" class="text-field" style="flex-grow: 1;" name="date_start" value="2000-01-01"></label>
+			<label>Date end: <input type="date" class="text-field" style="flex-grow: 1;" name="date_end" value="2020-12-31"></label>
+			<hr>
+
+			<label for="sort">Sorting:</label>
+			<select class="text-field" id="sort" name="sort">
+				<option value="def">By relevancy</option>
+				<option value="title_asc">Ascending by title</option>
+				<option value="title_desc">Descending by title</option>
+				<option value="publisher_asc">Ascending by publisher</option>
+				<option value="publisher_desc">Descending by publisher</option>
+				<option value="developer_asc">Ascending by developer</option>
+				<option value="developer_desc">Descending by developer</option>
+				<option value="date_asc">Ascending by date</option>
+				<option value="date_desc">Descending by date</option>
+			</select>
+			<input type="submit" class="link-button" value="Search">
+		</form>
+    </div>
+
+	{% if response %}
+	<h2 style="font-size:30">SEARCH RESULTS ({{ response.hits.total.value }})</h2>
+	<div class="flexing">
+	{% for hit in response %}
+		<div class="card">
+			<a href="{{ url_for('game.view_game', title=hit.title) }}">
+				<img src="{{ url_for('static', filename='/games/' + hit.meta.id + '.jpg') }}" width="460" height="215">
+				<header class="container"><b>{{ hit.title|upper }}</b></header>
+			</a>
+		</div>
+	{% endfor %}
+	</div>
+	{% endif %}
+
+</body>
+</html>

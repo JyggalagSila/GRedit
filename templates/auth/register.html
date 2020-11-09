@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Registration</title>
+{% endblock %}
+
+{% block body %}
+    <h1>Register screen</h1>
+
+    <div class="login">
+        <form method="post">
+            <label class="flex-row">Username<input class="text-field" type="text" maxlength="16" name="username" autocomplete="off" required></label>
+            <label class="flex-row">Password<input class="text-field" type="password" maxlength="24" name="password" autocomplete="off" required></label>
+            <label class="flex-row">Email<input class="text-field" type="email" maxlength="50" name="email" id="email" autocomplete="off" required></label>
+
+            <input class="link-button flex-center submit-button" type="submit" value="Register">
+        </form>
+    </div>
+{% endblock %}
